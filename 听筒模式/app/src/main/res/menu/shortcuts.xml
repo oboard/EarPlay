@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shortcuts xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <shortcut
+        android:shortcutId="c"
+        android:enabled="true"
+        android:icon="@drawable/i"
+        android:shortcutShortLabel="@string/a"
+        android:shortcutLongLabel="@string/a">
+        <intent
+            android:action="c"
+            android:targetPackage="com.oboard.ts"
+            android:targetClass="com.oboard.ts.MainActivity" />
+        <categories android:name="android.shortcut.conversation" />
+    </shortcut>
+    
+    <shortcut
+        android:shortcutId="d"
+        android:enabled="true"
+        android:icon="@drawable/i"
+        android:shortcutShortLabel="@string/b"
+        android:shortcutLongLabel="@string/b">
+        <intent
+            android:action="d"
+            android:targetPackage="com.oboard.ts"
+            android:targetClass="com.oboard.ts.MainActivity" />
+        <categories android:name="android.shortcut.conversation" />
+    </shortcut>
+    
+    <shortcut
+        android:shortcutId="e"
+        android:enabled="true"
+        android:icon="@drawable/i"
+        android:shortcutShortLabel="@string/c"
+        android:shortcutLongLabel="@string/c">
+        <intent
+            android:action="e"
+            android:targetPackage="com.oboard.ts"
+            android:targetClass="com.oboard.ts.MainActivity" />
+        <categories android:name="android.shortcut.conversation" />
+    </shortcut>
+    <!-- 这里可以定义更多的快捷方式 -->
+
+</shortcuts>
