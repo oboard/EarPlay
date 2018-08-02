@@ -13,7 +13,7 @@
 		android:name="android.permission.MODIFY_AUDIO_SETTINGS"/>
 
 	<uses-permission
-		android:name="android.permission.SYSTEM_ALERT_WINDOW"/>
+		android:name="android.permission.WAKE_LOCK"/>
 
 	<application
 		android:allowBackup="true"
@@ -34,10 +34,6 @@
 					android:name="android.intent.category.LAUNCHER"/>
 
 			</intent-filter>
-
-			<meta-data
-				android:name="android.app.shortcuts"
-				android:resource="@menu/shortcuts"/>
 
 		</activity>
 

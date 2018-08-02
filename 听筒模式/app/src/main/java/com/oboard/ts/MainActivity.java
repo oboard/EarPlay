@@ -1,59 +1,75 @@
 package com.oboard.ts;
 
-import android.app.Activity;
-import android.os.Bundle;
-import android.media.AudioManager;
-import android.widget.Button;
-import android.view.View;
-import java.util.Timer;
-import java.util.TimerTask;
 import android.animation.ValueAnimator;
-import android.widget.Toast;
-import android.app.ActionBar;
-import android.view.Menu;
-import android.view.MenuItem;
-import android.view.ViewConfiguration;
-import java.lang.reflect.Field;
+import android.app.Activity;
 import android.app.AlertDialog;
-import android.view.View.OnClickListener;
-import android.content.DialogInterface;
-import android.hardware.SensorManager;
-import android.hardware.Sensor;
 import android.content.Context;
+import android.content.DialogInterface;
+import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
-import android.view.LayoutInflater;
-import android.widget.RelativeLayout;
-import android.view.WindowManager;
-import android.view.WindowManager.LayoutParams;
-import android.graphics.PixelFormat;
+import android.hardware.SensorManager;
+import android.media.AudioManager;
+import android.os.Bundle;
+import android.os.PowerManager;
+import android.view.Menu;
+import android.view.MenuItem;
+import android.view.View;
 import android.widget.CheckBox;
-import android.content.Intent;
+import android.widget.CompoundButton;
+import java.util.Timer;
+import java.util.TimerTask;
 
-public class MainActivity extends Activity {
+public class MainActivity extends Activity implements SensorEventListener {
     AudioManager audioManager;
-    
-    public static Boolean canp = false,canj = false;
-    
-    Timer mTimer;TimerTask mTimerTask;
-    int mMode;View ii;//Button i2,i3,i4;
+    SensorManager sensorManager;
+    PowerManager.WakeLock mWakeLock;
+    PowerManager mPowerManager;
+
+    CheckBox cb;//传感开关
+    Timer mTimer;TimerTask mTimerTask;//timer
+    int mMode;
+    View ii;
+    Sensor mSensor;//传感器
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main);
 
-        ii = findViewById(R.id.i);
+        sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
+        mSensor = sensorManager.getDefaultSensor(Sensor.TYPE_PROXIMITY);
 
-        Intent i = new Intent(this,HideService.class);
-        startService(i);
-        
-        /*
-         i2 = (Button)findViewById(R.id.l1);
-         i3 = (Button)findViewById(R.id.l2);
-         i4 = (Button)findViewById(R.id.l3);
-         */
+//息屏设置
+        mPowerManager = (PowerManager) getSystemService(Context.POWER_SERVICE);
+        mWakeLock = mPowerManager.newWakeLock(PowerManager.PROXIMITY_SCREEN_OFF_WAKE_LOCK, "");
+
+
+        ii = findViewById(R.id.i);
+        cb = (CheckBox)findViewById(R.id.mainCheckBox1);
+
+        cb.setOnCheckedChangeListener(new CheckBox.OnCheckedChangeListener() {
+                public void onCheckedChanged(CompoundButton view, boolean state) {
+                    if (state) {
+                        //注册传感器,先判断有没有传感器
+                        if (mSensor != null)
+                            sensorManager.registerListener(MainActivity.this, mSensor, SensorManager.SENSOR_DELAY_NORMAL);
+                    } else {
+//传感器取消监听
+                        sensorManager.unregisterListener(MainActivity.this);
+//释放息屏
+                        if (mWakeLock.isHeld())
+                            mWakeLock.release();
+                        mWakeLock = null;
+                        mPowerManager = null;
+                    }
+                }
+            });
+
+
+
         audioManager = (AudioManager)this.getSystemService("audio");
-        
+
         this.mTimer = new Timer();
         this.mTimerTask = new TimerTask(){
 
@@ -71,6 +87,41 @@ public class MainActivity extends Activity {
         };
         this.mTimer.schedule(this.mTimerTask, 0, 1000);
     }
+
+    /**
+     * 传感器变化
+     *
+     * @param event
+     */
+    @Override
+    public void onSensorChanged(SensorEvent event) {
+        if (event.values[0] == 0.0) {
+            //贴近手机
+            //设置免提
+            audioManager.setSpeakerphoneOn(false);
+            audioManager.setMode(AudioManager.MODE_IN_COMMUNICATION);
+            //关闭屏幕
+            if (!mWakeLock.isHeld())
+                mWakeLock.acquire();
+
+        } else {
+            //离开手机
+            audioManager.setMode(AudioManager.MODE_NORMAL);
+            //设置免提
+            audioManager.setSpeakerphoneOn(true);
+
+            //唤醒设备
+            if (mWakeLock.isHeld())
+                mWakeLock.release();
+        }
+    }
+
+    @Override
+    public void onAccuracyChanged(Sensor p1, int p2) {
+
+    }
+
+
     public void tt(View v) {
         mMode = 3;
         mbar(v.getY());
@@ -80,9 +131,6 @@ public class MainActivity extends Activity {
     } public void jt(View v) {
         mMode = 2;
         mbar(v.getY());
-    } public void ck(View v) {
-        canj = !canj;
-        
     }
     /*
      @Override
@@ -156,19 +204,19 @@ public class MainActivity extends Activity {
         mAnimator.setDuration(250);
 		mAnimator.start();
     }
-    
-    @Override
-    protected void onResume() {
-        //shortcuts
-        if (getIntent().getAction().equals("c")) {
-            
-        } else if (getIntent().getAction().equals("d")) {
-            mMode = 3;
-        } else if (getIntent().getAction().equals("e")) {
-            mMode = 2;
-        }
-        
-        super.onResume();
-    }
+    /*
+     @Override
+     protected void onResume() {
+     //shortcuts
+     if (getIntent().getAction().equals("c")) {
 
+     } else if (getIntent().getAction().equals("d")) {
+     mMode = 3;
+     } else if (getIntent().getAction().equals("e")) {
+     mMode = 2;
+     }
+
+     super.onResume();
+     }
+     */
 }
