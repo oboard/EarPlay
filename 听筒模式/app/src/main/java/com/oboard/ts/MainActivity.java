@@ -27,7 +27,8 @@ public class MainActivity extends Activity implements SensorEventListener {
     PowerManager mPowerManager;
 
     CheckBox cb;//传感开关
-    Timer mTimer;TimerTask mTimerTask;//timer
+    Timer mTimer;//timer
+    TimerTask mTimerTask;//timertask
     int mMode;
     View ii;
     Sensor mSensor;//传感器
@@ -40,7 +41,7 @@ public class MainActivity extends Activity implements SensorEventListener {
         sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
         mSensor = sensorManager.getDefaultSensor(Sensor.TYPE_PROXIMITY);
 
-//息屏设置
+        //息屏设置
         mPowerManager = (PowerManager) getSystemService(Context.POWER_SERVICE);
         mWakeLock = mPowerManager.newWakeLock(PowerManager.PROXIMITY_SCREEN_OFF_WAKE_LOCK, "");
 
@@ -55,9 +56,9 @@ public class MainActivity extends Activity implements SensorEventListener {
                         if (mSensor != null)
                             sensorManager.registerListener(MainActivity.this, mSensor, SensorManager.SENSOR_DELAY_NORMAL);
                     } else {
-//传感器取消监听
+                        //传感器取消监听
                         sensorManager.unregisterListener(MainActivity.this);
-//释放息屏
+                        //释放息屏
                         if (mWakeLock.isHeld())
                             mWakeLock.release();
                         mWakeLock = null;
@@ -70,9 +71,8 @@ public class MainActivity extends Activity implements SensorEventListener {
 
         audioManager = (AudioManager)this.getSystemService("audio");
 
-        this.mTimer = new Timer();
-        this.mTimerTask = new TimerTask(){
-
+        mTimer = new Timer();
+        mTimerTask = new TimerTask(){
             public void run() {
                 audioManager.setMode(mMode);
                 /*
@@ -85,7 +85,7 @@ public class MainActivity extends Activity implements SensorEventListener {
                 setVolumeControlStream(AudioManager.STREAM_VOICE_CALL);
             }
         };
-        this.mTimer.schedule(this.mTimerTask, 0, 1000);
+        mTimer.schedule(this.mTimerTask, 0, 1000);
     }
 
     /**
@@ -115,23 +115,17 @@ public class MainActivity extends Activity implements SensorEventListener {
                 mWakeLock.release();
         }
     }
-
+    
     @Override
     public void onAccuracyChanged(Sensor p1, int p2) {
 
     }
 
 
-    public void tt(View v) {
-        mMode = 3;
+    public void onModeChange(View v) {
+        mMode = Integer.parseInt(v.getTag().toString());
         mbar(v.getY());
-    } public void lb(View v) {
-        mMode = 0;
-        mbar(v.getY());
-    } public void jt(View v) {
-        mMode = 2;
-        mbar(v.getY());
-    }
+    } 
     /*
      @Override
      protected void onResume() {
@@ -165,23 +159,17 @@ public class MainActivity extends Activity implements SensorEventListener {
     public boolean onMenuItemSelected(int featureId, MenuItem item) {
         switch (item.getItemId()) {
             case R.id.gy:
-                AlertDialog.Builder normalDia=new AlertDialog.Builder(this); 
-                normalDia.setTitle("关于"); 
-                normalDia.setMessage("谢谢您对本软件的支持 \n\n开发者\n 一块小板子 2232442466 \n鸣谢\n 小青光 1664147500"); 
-
-                normalDia.setPositiveButton("确定", new DialogInterface.OnClickListener() { 
+                new AlertDialog.Builder(this)
+                    .setTitle("关于")
+                    .setMessage("谢谢您对本软件的支持 \n\n开发者\n 一块小板子 2232442466 \n鸣谢\n 小青光 1664147500")
+                    .setPositiveButton("确定", null)
+                    .setNegativeButton("不确定", new DialogInterface.OnClickListener() { 
                         @Override 
-                        public void onClick(DialogInterface dialog, int which) {  
-
+                        public void onClick(DialogInterface dialog, int which) { 
+                            finish();
                         } 
-                    }); /*
-                 normalDia.setNegativeButton("取消", new DialogInterface.OnClickListener() { 
-                 @Override 
-                 public void onClick(DialogInterface dialog, int which) { 
-
-                 } 
-                 }); */
-                normalDia.create().show(); 
+                    })
+                    .create().show(); 
                 break;
                 //case R.id.jz:
 
@@ -192,7 +180,7 @@ public class MainActivity extends Activity implements SensorEventListener {
 
     public void mbar(float y) {
         //1.设置属性的初始值和结束值
-        ValueAnimator mAnimator = ValueAnimator.ofFloat(ii.getY(), y);
+        final ValueAnimator mAnimator = ValueAnimator.ofFloat(ii.getY(), y);
         //2.为目标对象的属性变化设置监听器
         mAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
                 @Override
@@ -201,8 +189,8 @@ public class MainActivity extends Activity implements SensorEventListener {
                 }
             });
         //3.设置动画的持续时间
-        mAnimator.setDuration(250);
-		mAnimator.start();
+        mAnimator.setDuration(250)
+            .start();
     }
     /*
      @Override
