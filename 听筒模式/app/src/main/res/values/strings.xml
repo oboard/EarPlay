@@ -3,9 +3,9 @@
 
     <string name="name">EarPlay</string>
 
-
-    <string name="a">切换到喇叭</string>
-    <string name="b">切换到听筒</string>
-    <string name="c">切换到听筒兼容</string>
+    <string name="a">喇叭模式</string>
+    <string name="b">听筒模式</string>
+    <string name="c">听筒兼容模式</string>
     
+    <string name="backtoast">再按一次退出</string>
 </resources>

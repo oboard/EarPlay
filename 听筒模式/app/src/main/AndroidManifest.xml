@@ -3,26 +3,22 @@
     package="com.oboard.ts">
     <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
-    
+
     <application
         android:allowBackup="true"
-        android:icon="@drawable/i"
+        android:icon="@mipmap/i"
         android:label="@string/name"
         android:theme="@style/AppTheme">
         <activity
             android:name=".MainActivity"
+            android:launchMode="singleTask"
+            android:screenOrientation="portrait"
             android:label="@string/name">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
-            
         </activity>
-        <service android:enabled="true"
-            android:exported="true"
-            android:isolatedProcess="true"
-            android:name=".HideService">
-        </service>
     </application>
 </manifest>
 
