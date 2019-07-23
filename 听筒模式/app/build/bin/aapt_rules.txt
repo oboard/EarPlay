@@ -1,14 +1,14 @@
 # view AndroidManifest.xml #generated:24
 -keep class com.oboard.ts.MainActivity { <init>(...); }
 
-# onClick res/layout/main.xml #generated:84
+# onClick res/layout/main.xml #generated:101
 -keepclassmembers class * { *** about(...); }
 
 # onClick res/layout/main.xml #generated:2
 -keepclassmembers class * { *** finish(...); }
 
-# onClick res/layout/main.xml #generated:36
-# onClick res/layout/main.xml #generated:44
-# onClick res/layout/main.xml #generated:52
+# onClick res/layout/main.xml #generated:53
+# onClick res/layout/main.xml #generated:61
+# onClick res/layout/main.xml #generated:69
 -keepclassmembers class * { *** onModeChange(...); }
 

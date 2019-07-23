@@ -18,17 +18,17 @@ public final class R {
     }
     public static final class drawable {
         public static final int background=0x7f020000;
-        public static final int ear=0x7f020001;
-        public static final int ring=0x7f020002;
-        public static final int speaker=0x7f020003;
+        public static final int dropbar=0x7f020001;
+        public static final int selectground=0x7f020002;
     }
     public static final class id {
-        public static final int gy=0x7f090005;
-        public static final int i=0x7f090001;
-        public static final int mainCheckBox1=0x7f090004;
-        public static final int mainLinearLayout1=0x7f090000;
-        public static final int mainLinearLayout2=0x7f090003;
-        public static final int mainSeekBar1=0x7f090002;
+        public static final int gy=0x7f090006;
+        public static final int i=0x7f090002;
+        public static final int mainCheckBox1=0x7f090005;
+        public static final int mainLinearLayout1=0x7f090001;
+        public static final int mainLinearLayout2=0x7f090004;
+        public static final int mainLinearLayout3=0x7f090000;
+        public static final int mainSeekBar1=0x7f090003;
     }
     public static final class layout {
         public static final int main=0x7f040000;
