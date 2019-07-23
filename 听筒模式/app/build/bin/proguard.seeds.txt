@@ -1,0 +1,27 @@
+com.oboard.ts.MainActivity
+com.oboard.ts.MainActivity: void onModeChange(android.view.View)
+com.oboard.ts.MainActivity: void onModeChange(int)
+com.oboard.ts.MainActivity: void about(android.view.View)
+com.oboard.ts.MainActivity: MainActivity()
+com.oboard.ts.R$color: int colorAccent
+com.oboard.ts.R$color: int colorPrimary
+com.oboard.ts.R$color: int colorPrimaryDark
+com.oboard.ts.R$color: int transparent
+com.oboard.ts.R$drawable: int ear
+com.oboard.ts.R$drawable: int ring
+com.oboard.ts.R$drawable: int speaker
+com.oboard.ts.R$id: int gy
+com.oboard.ts.R$id: int i
+com.oboard.ts.R$id: int mainCheckBox1
+com.oboard.ts.R$id: int mainLinearLayout1
+com.oboard.ts.R$id: int mainLinearLayout2
+com.oboard.ts.R$id: int mainSeekBar1
+com.oboard.ts.R$layout: int main
+com.oboard.ts.R$menu: int main
+com.oboard.ts.R$mipmap: int i
+com.oboard.ts.R$string: int a
+com.oboard.ts.R$string: int b
+com.oboard.ts.R$string: int backtoast
+com.oboard.ts.R$string: int c
+com.oboard.ts.R$string: int name
+com.oboard.ts.R$style: int AppTheme

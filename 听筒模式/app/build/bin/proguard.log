@@ -1,0 +1,24 @@
+ProGuard, version 6.0.3
+ProGuard is released under the GNU General Public License. You therefore
+must ensure that programs that link to it (a, com.a4455jkjh.b, ...)
+carry the GNU General Public License as well. Alternatively, you can
+apply for an exception with the author of ProGuard.
+Reading input...
+Reading program directory [/storage/emulated/0/AppProjects/EarPlay/听筒模式/app/build/bin/classesrelease_proguard]
+Reading library jar [/data/data/com.aide.ui/no_backup/.aide/android.jar]
+Initializing...
+Note: the configuration refers to the unknown class 'com.google.vending.licensing.ILicensingService'
+Note: the configuration refers to the unknown class 'com.android.vending.licensing.ILicensingService'
+Note: the configuration refers to the unknown class 'android.support.annotation.Keep'
+Note: the configuration refers to the unknown class 'android.support.annotation.Keep'
+Note: the configuration refers to the unknown class 'android.support.annotation.Keep'
+Note: the configuration refers to the unknown class 'android.support.annotation.Keep'
+Note: the configuration refers to the unknown class 'android.support.annotation.Keep'
+Warning: com.oboard.ts.MainActivity$100000005: can't find referenced field 'int num' in program class com.oboard.ts.MainActivity
+Note: there were 7 references to unknown classes.
+      You should check your configuration for typos.
+      (http://proguard.sourceforge.net/manual/troubleshooting.html#unknownclass)
+Warning: there were 1 unresolved references to program class members.
+         Your input classes appear to be inconsistent.
+         You may need to recompile the code.
+         (http://proguard.sourceforge.net/manual/troubleshooting.html#unresolvedprogramclassmember)

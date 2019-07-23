@@ -18,12 +18,11 @@ import android.media.AudioManager;
 import android.os.Bundle;
 import android.os.PowerManager;
 import android.view.KeyEvent;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.SeekBar;
+import android.widget.Switch;
 import com.oboard.ts.R;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -34,7 +33,7 @@ public class MainActivity extends Activity implements SensorEventListener {
     PowerManager.WakeLock mWakeLock;
     PowerManager mPowerManager;
 
-    CheckBox cb;//传感开关
+    Switch cb;//传感开关
     Timer mTimer;//timer
     TimerTask mTimerTask;//timertask
     int mMode;
@@ -51,33 +50,33 @@ public class MainActivity extends Activity implements SensorEventListener {
         setContentView(R.layout.main);
 
         ii = findViewById(R.id.i);
-        cb = (CheckBox)findViewById(R.id.mainCheckBox1);
+        cb = (Switch)findViewById(R.id.mainCheckBox1);
         mVolumeBar = (SeekBar)findViewById(R.id.mainSeekBar1);
 
         cb.setOnCheckedChangeListener(new CheckBox.OnCheckedChangeListener() {
-                public void onCheckedChanged(CompoundButton view, boolean state) {
-                    if (state) {
-                        sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
-                        mSensor = sensorManager.getDefaultSensor(Sensor.TYPE_PROXIMITY);
+			public void onCheckedChanged(CompoundButton view, boolean state) {
+				if (state) {
+					sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
+					mSensor = sensorManager.getDefaultSensor(Sensor.TYPE_PROXIMITY);
 
-                        //息屏设置
-                        mPowerManager = (PowerManager) getSystemService(Context.POWER_SERVICE);
-                        mWakeLock = mPowerManager.newWakeLock(PowerManager.PROXIMITY_SCREEN_OFF_WAKE_LOCK, "");
+					//息屏设置
+					mPowerManager = (PowerManager) getSystemService(Context.POWER_SERVICE);
+					mWakeLock = mPowerManager.newWakeLock(PowerManager.PROXIMITY_SCREEN_OFF_WAKE_LOCK, "");
 
-                        //注册传感器,先判断有没有传感器
-                        if (mSensor != null)
-                            sensorManager.registerListener(MainActivity.this, mSensor, SensorManager.SENSOR_DELAY_NORMAL);
-                    } else {
-                        //传感器取消监听
-                        sensorManager.unregisterListener(MainActivity.this);
-                        //释放息屏
-                        if (mWakeLock.isHeld())
-                            mWakeLock.release();
-                        mWakeLock = null;
-                        mPowerManager = null;
-                    }
-                }
-            });
+					//注册传感器,先判断有没有传感器
+					if (mSensor != null)
+						sensorManager.registerListener(MainActivity.this, mSensor, SensorManager.SENSOR_DELAY_NORMAL);
+				} else {
+					//传感器取消监听
+					sensorManager.unregisterListener(MainActivity.this);
+					//释放息屏
+					if (mWakeLock.isHeld())
+						mWakeLock.release();
+					mWakeLock = null;
+					mPowerManager = null;
+				}
+			}
+		});
 
         audioManager = (AudioManager)this.getSystemService("audio");
         //获取系统的最大声音
@@ -90,14 +89,14 @@ public class MainActivity extends Activity implements SensorEventListener {
         //设置为系统现在的音量
         mVolumeBar.setProgress(systemVolume);
         mVolumeBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-                @Override
-                public void onProgressChanged(SeekBar sb, int p, boolean b) {
-                    systemVolume = p;
-                    audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, systemVolume, 0);
-                }
-                public void onStartTrackingTouch(SeekBar sb) {}
-                public void onStopTrackingTouch(SeekBar sb) {}
-            });
+			@Override
+			public void onProgressChanged(SeekBar sb, int p, boolean b) {
+				systemVolume = p;
+				audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, systemVolume, 0);
+			}
+			public void onStartTrackingTouch(SeekBar sb) {}
+			public void onStopTrackingTouch(SeekBar sb) {}
+		});
 
         mTimer = new Timer();
         mTimerTask = new TimerTask(){
@@ -135,47 +134,47 @@ public class MainActivity extends Activity implements SensorEventListener {
                 mWakeLock.release();
         }
     }
-    
-    int num = -1;
-    @Override
-    protected void onNewIntent(Intent intent) {
-        if (intent.getStringExtra("i") != null) {
-            ((View)mVolumeBar.getParent()).setVisibility(View.GONE);
-            String[] n = new String[] {
-                getResources().getString(R.string.a),
-                getResources().getString(R.string.b),
-                getResources().getString(R.string.c)
-            };
-            
-            new AlertDialog.Builder(this)
-                .setTitle("EarPlay")
-                .setIcon(R.mipmap.i)
-                .setPositiveButton("确定", new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int which) {
-                        if (num >= 0)
-                            onModeChange(new int[] {0, 3, 2, 1}[num]);
-                        onKeyDown(KeyEvent.KEYCODE_BACK, new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_BACK));
-                    }
-                })
-                .setNegativeButton("取消", new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int which) {
-                        onKeyDown(KeyEvent.KEYCODE_BACK, new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_BACK));
-                    }
-                })
-                .setSingleChoiceItems(n, new int[] {0, 3, 2, 1}[mMode], new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int which) {
-                        num = which;
-                    }
-                })
-                .create().show();
-            
-        } else {
-            ((View)mVolumeBar.getParent()).setVisibility(View.VISIBLE);
-        }
+    /*
+     int num = -1;
+     @Override
+     protected void onNewIntent(Intent intent) {
+     if (intent.getStringExtra("i") != null) {
+     ((View)mVolumeBar.getParent()).setVisibility(View.GONE);
+     String[] n = new String[] {
+     getResources().getString(R.string.a),
+     getResources().getString(R.string.b),
+     getResources().getString(R.string.c)
+     };
 
-        super.onNewIntent(intent);
-    }
+     new AlertDialog.Builder(this)
+     .setTitle("EarPlay")
+     .setIcon(R.mipmap.i)
+     .setPositiveButton("确定", new DialogInterface.OnClickListener() {
+     public void onClick(DialogInterface dialog, int which) {
+     if (num >= 0)
+     onModeChange(new int[] {0, 3, 2, 1}[num]);
+     onKeyDown(KeyEvent.KEYCODE_BACK, new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_BACK));
+     }
+     })
+     .setNegativeButton("取消", new DialogInterface.OnClickListener() {
+     public void onClick(DialogInterface dialog, int which) {
+     onKeyDown(KeyEvent.KEYCODE_BACK, new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_BACK));
+     }
+     })
+     .setSingleChoiceItems(n, new int[] {0, 3, 2, 1}[mMode], new DialogInterface.OnClickListener() {
+     public void onClick(DialogInterface dialog, int which) {
+     num = which;
+     }
+     })
+     .create().show();
 
+     } else {
+     ((View)mVolumeBar.getParent()).setVisibility(View.VISIBLE);
+     }
+
+     super.onNewIntent(intent);
+     }
+     */
 
 
     @Override
@@ -185,6 +184,7 @@ public class MainActivity extends Activity implements SensorEventListener {
 
     @Override
     protected void onDestroy() {
+
         cancelNotification();
         super.onDestroy();
     }
@@ -192,9 +192,14 @@ public class MainActivity extends Activity implements SensorEventListener {
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         if (keyCode == KeyEvent.KEYCODE_BACK && event.getAction() == KeyEvent.ACTION_DOWN) {
+            ((View)mVolumeBar.getParent()).setVisibility(View.VISIBLE);
             moveTaskToBack(true);
         }
         return super.onKeyDown(keyCode, event);
+    }
+
+    public void finish(View v) {
+        moveTaskToBack(true);
     }
 
     public void onModeChange(View v) {
@@ -207,43 +212,13 @@ public class MainActivity extends Activity implements SensorEventListener {
         mMode = i;//储存模式
         int[] y = new int[] {0, 3, 2, 1};
         mName = new String[] {
-            getResources().getString(R.string.a),
-            getResources().getString(R.string.b),
-            getResources().getString(R.string.c)
+		getResources().getString(R.string.a),
+		getResources().getString(R.string.b),
+		getResources().getString(R.string.c)
         }[y[i]];
         mbar(ii.getHeight() * y[i]);//指示条
         cancelNotification();//删除通知
         setNotification();//显示通知
-    }
-
-
-    public boolean onCreateOptionsMenu(Menu menu) { 
-        super.onCreateOptionsMenu(menu);
-        getMenuInflater().inflate(R.menu.main, menu);
-        return true; 
-    }
-
-    @Override
-    public boolean onMenuItemSelected(int featureId, MenuItem item) {
-        switch (item.getItemId()) {
-            case R.id.gy:
-                new AlertDialog.Builder(this)
-                    .setTitle("关于")
-                    .setMessage("谢谢您对本软件的支持 \n\n开发者\n 一块小板子 2232442466 \n鸣谢\n 小青光 1664147500")
-                    .setPositiveButton("确定", null)
-                    .setNegativeButton("不确定", new DialogInterface.OnClickListener() { 
-                        @Override 
-                        public void onClick(DialogInterface dialog, int which) { 
-                            finish();
-                        } 
-                    })
-                    .create().show(); 
-                break;
-                //case R.id.jz:
-
-                //  break;
-        }
-        return super.onMenuItemSelected(featureId, item);
     }
 
     public void mbar(float y) {
@@ -251,14 +226,14 @@ public class MainActivity extends Activity implements SensorEventListener {
         final ValueAnimator mAnimator = ValueAnimator.ofFloat(ii.getY(), y);
         //2.为目标对象的属性变化设置监听器
         mAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
-                @Override
-                public void onAnimationUpdate(ValueAnimator animation) {
-                    ii.setY(animation.getAnimatedValue());
-                }
-            });
+			@Override
+			public void onAnimationUpdate(ValueAnimator animation) {
+				ii.setY(animation.getAnimatedValue());
+			}
+		});
         //3.设置动画的持续时间
         mAnimator.setDuration(250)
-            .start();
+		.start();
     }
 
     // 添加常驻通知
@@ -270,18 +245,32 @@ public class MainActivity extends Activity implements SensorEventListener {
 
         Notification.Builder nb = new Notification.Builder(this);
         nb.setSmallIcon(R.mipmap.i)
-            .setOngoing(true)
-            .setLargeIcon(BitmapFactory.decodeResource(getResources(), R.mipmap.i))
-            .setContentIntent(contextIntent)
-            .setContentTitle("切换声音输出")
-            .setContentText("当前"  + mName)
-            .setVisibility(Notification.VISIBILITY_PUBLIC);
+		.setOngoing(true)
+		.setLargeIcon(BitmapFactory.decodeResource(getResources(), R.mipmap.i))
+		.setContentIntent(contextIntent)
+		.setContentTitle("切换声音输出")
+		.setContentText("当前"  + mName)
+		.setVisibility(Notification.VISIBILITY_PUBLIC);
 
         //设置消息属性
         //必须设置的属性：小图标 标题 内容
         notificationManager.notify(0, nb.build());
     }
 
+
+	public void about(View view) {
+		new AlertDialog.Builder(this)
+		.setTitle("关于")
+		.setMessage("谢谢您对本软件的支持 \n\n开发者\n 一块小板子 2232442466 \n鸣谢\n 小青光 1664147500")
+		.setPositiveButton("确定", null)
+		.setNegativeButton("不确定", new DialogInterface.OnClickListener() { 
+			@Override 
+			public void onClick(DialogInterface dialog, int which) { 
+				finish();
+			} 
+		})
+		.create().show(); 
+	}
 
     // 取消通知
     public void cancelNotification() {
