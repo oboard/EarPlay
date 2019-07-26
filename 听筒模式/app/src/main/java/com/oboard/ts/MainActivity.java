@@ -26,6 +26,10 @@ import android.widget.Switch;
 import com.oboard.ts.R;
 import java.util.Timer;
 import java.util.TimerTask;
+import android.content.res.Configuration;
+import android.widget.LinearLayout;
+import android.graphics.drawable.Icon;
+import android.widget.Toast;
 
 public class MainActivity extends Activity implements SensorEventListener {
     AudioManager audioManager;
@@ -41,17 +45,22 @@ public class MainActivity extends Activity implements SensorEventListener {
     View ii;
     SeekBar mVolumeBar;
     Sensor mSensor;//传感器
+    LinearLayout ll;
 
     int maxVolume, systemVolume;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        overridePendingTransition(R.anim.side_down_in, R.anim.side_down_out);
+
         setContentView(R.layout.main);
 
         ii = findViewById(R.id.i);
         cb = (Switch)findViewById(R.id.mainCheckBox1);
         mVolumeBar = (SeekBar)findViewById(R.id.mainSeekBar1);
+        ll = findViewById(R.id.mainLinearLayout);
 
         cb.setOnCheckedChangeListener(new CheckBox.OnCheckedChangeListener() {
 			public void onCheckedChanged(CompoundButton view, boolean state) {
@@ -79,15 +88,7 @@ public class MainActivity extends Activity implements SensorEventListener {
 		});
 
         audioManager = (AudioManager)this.getSystemService("audio");
-        //获取系统的最大声音
-        maxVolume = audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC);
-        //获取系统当前的声音
-        systemVolume = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC);
-
-        //设置最大值
-        mVolumeBar.setMax(maxVolume);
-        //设置为系统现在的音量
-        mVolumeBar.setProgress(systemVolume);
+        refreshVolume();
         mVolumeBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
 			@Override
 			public void onProgressChanged(SeekBar sb, int p, boolean b) {
@@ -112,6 +113,30 @@ public class MainActivity extends Activity implements SensorEventListener {
 
         mName = getResources().getString(R.string.a);
         setNotification();
+    }
+
+    public void refreshVolume() {
+        //获取系统的最大声音
+        maxVolume = audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC);
+        //获取系统当前的声音
+        systemVolume = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC);
+
+        //设置最大值
+        mVolumeBar.setMax(maxVolume);
+        //设置为系统现在的音量
+        mVolumeBar.setProgress(systemVolume);
+    }
+
+    @Override
+    protected void onResume() {
+        // TODO: Implement this method
+        super.onResume();
+        overridePendingTransition(R.anim.side_down_in, R.anim.side_down_out);
+    }
+
+    @Override
+    public void onAccuracyChanged(Sensor p1, int p2) {
+        //不能删，删了报错！
     }
 
     /**
@@ -176,12 +201,6 @@ public class MainActivity extends Activity implements SensorEventListener {
      }
      */
 
-
-    @Override
-    public void onAccuracyChanged(Sensor p1, int p2) {
-
-    }
-
     @Override
     protected void onDestroy() {
 
@@ -191,14 +210,33 @@ public class MainActivity extends Activity implements SensorEventListener {
 
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
+        switch (keyCode) {
+            case KeyEvent.KEYCODE_VOLUME_UP:
+            audioManager.adjustStreamVolume(
+            AudioManager.STREAM_MUSIC,
+            AudioManager.ADJUST_RAISE,
+            AudioManager.FLAG_PLAY_SOUND | AudioManager.FLAG_SHOW_UI);
+            refreshVolume();
+            return true;
+            case KeyEvent.KEYCODE_VOLUME_DOWN:
+            audioManager.adjustStreamVolume(
+            AudioManager.STREAM_MUSIC,
+            AudioManager.ADJUST_LOWER,
+            AudioManager.FLAG_PLAY_SOUND | AudioManager.FLAG_SHOW_UI);
+            refreshVolume();
+            return true;
+            default:
+            break;
+        }
+
         if (keyCode == KeyEvent.KEYCODE_BACK && event.getAction() == KeyEvent.ACTION_DOWN) {
-            ((View)mVolumeBar.getParent()).setVisibility(View.VISIBLE);
-            moveTaskToBack(true);
+            finish();
         }
         return super.onKeyDown(keyCode, event);
     }
 
     public void finish(View v) {
+        overridePendingTransition(R.anim.side_down_in, R.anim.side_down_out);
         moveTaskToBack(true);
     }
 
@@ -252,6 +290,12 @@ public class MainActivity extends Activity implements SensorEventListener {
 		.setContentText("当前"  + mName)
 		.setVisibility(Notification.VISIBILITY_PUBLIC);
 
+        if (mName.equals(getResources().getString(R.string.a))) {
+            nb.setSmallIcon(Icon.createWithResource(this, R.drawable.b));
+        } else {
+            nb.setSmallIcon(Icon.createWithResource(this, R.drawable.a));
+        }
+        
         //设置消息属性
         //必须设置的属性：小图标 标题 内容
         notificationManager.notify(0, nb.build());
@@ -276,6 +320,21 @@ public class MainActivity extends Activity implements SensorEventListener {
     public void cancelNotification() {
         NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
         notificationManager.cancel(0);
+    }
+
+
+    @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+
+        LinearLayout.LayoutParams lp = (LinearLayout.LayoutParams)ll.getLayoutParams();
+        // Checks the orientation of the screen
+        if (newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE) {
+            lp.weight = 1.0f;
+        } else if (newConfig.orientation == Configuration.ORIENTATION_PORTRAIT) {
+            lp.weight = 0.0f;
+        }
+        ll.setLayoutParams(lp);
     }
 
 
