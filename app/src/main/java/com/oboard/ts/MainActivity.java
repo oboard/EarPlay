@@ -5,11 +5,13 @@ import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Notification;
+import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.Icon;
@@ -21,6 +23,7 @@ import android.media.AudioManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.PowerManager;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.widget.CheckBox;
@@ -58,6 +61,13 @@ public class MainActivity extends Activity implements SensorEventListener {
 
         setContentView(R.layout.main);
 
+        // Request notification permission for Android 13 and above
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (checkSelfPermission(android.Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+                requestPermissions(new String[]{android.Manifest.permission.POST_NOTIFICATIONS}, 1);
+            }
+        }
+
         ii = findViewById(R.id.i);
         cb = findViewById(R.id.mainCheckBox1);
         mVolumeBar = findViewById(R.id.mainSeekBar1);
@@ -72,16 +82,29 @@ public class MainActivity extends Activity implements SensorEventListener {
 
                     //息屏设置
                     mPowerManager = (PowerManager) getSystemService(Context.POWER_SERVICE);
-                    mWakeLock = mPowerManager.newWakeLock(PowerManager.PROXIMITY_SCREEN_OFF_WAKE_LOCK, "");
+                    mWakeLock = mPowerManager.newWakeLock(PowerManager.PROXIMITY_SCREEN_OFF_WAKE_LOCK, "EarPlay:proximity");
 
                     //注册传感器,先判断有没有传感器
-                    if (mSensor != null)
-                        sensorManager.registerListener(MainActivity.this, mSensor, SensorManager.SENSOR_DELAY_NORMAL);
+                    if (mSensor != null) {
+                        boolean registered = sensorManager.registerListener(MainActivity.this, 
+                            mSensor, 
+                            SensorManager.SENSOR_DELAY_NORMAL);
+                        if (!registered) {
+                            cb.setChecked(false);
+                            Log.e("MainActivity", "Failed to register sensor listener");
+                        }
+                    } else {
+                        cb.setChecked(false);
+                        Log.e("MainActivity", "No proximity sensor found");
+                    }
                 } else {
-                    //传感器取消监听
-                    sensorManager.unregisterListener(MainActivity.this);
+                    if (sensorManager != null) {
+                        //传感器取消监听
+                        sensorManager.unregisterListener(MainActivity.this);
+                        Log.d("MainActivity", "Unregistered sensor listener");
+                    }
                     //释放息屏
-                    if (mWakeLock.isHeld())
+                    if (mWakeLock != null && mWakeLock.isHeld())
                         mWakeLock.release();
                     mWakeLock = null;
                     mPowerManager = null;
@@ -149,19 +172,32 @@ public class MainActivity extends Activity implements SensorEventListener {
      */
     @Override
     public void onSensorChanged(SensorEvent event) {
-        if (event.values[0] == 0.0) {
+        if (event.sensor.getType() != Sensor.TYPE_PROXIMITY) {
+            return;
+        }
+
+        float distance = event.values[0];
+        float maxRange = event.sensor.getMaximumRange();
+        
+        Log.d("MainActivity", "Proximity changed: " + distance + " (max: " + maxRange + ")");
+
+        if (distance < maxRange) {
             //贴近手机
             //关闭屏幕
-            if (!mWakeLock.isHeld())
+            if (!mWakeLock.isHeld()) {
                 mWakeLock.acquire(10 * 60 * 1000L /*10 minutes*/);
-
+                Log.d("MainActivity", "Screen off - proximity near");
+            }
         } else {
             //离开手机
-            //唤醒设备
-            if (mWakeLock.isHeld())
+            //点亮屏幕
+            if (mWakeLock.isHeld()) {
                 mWakeLock.release();
+                Log.d("MainActivity", "Screen on - proximity far");
+            }
         }
     }
+
     /*
      int num = -1;
      @Override
@@ -259,7 +295,7 @@ public class MainActivity extends Activity implements SensorEventListener {
         }[y[i]];
         mbar(ii.getHeight() * y[i]);//指示条
         cancelNotification();//删除通知
-        setNotification();//显示通知
+        setNotification();//重新设置通知
     }
 
     public void mbar(float y) {
@@ -275,11 +311,29 @@ public class MainActivity extends Activity implements SensorEventListener {
     // 添加常驻通知
     public void setNotification() {
         NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+        
+        // Create notification channel for Android 8.0 and above
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            NotificationChannel channel = new NotificationChannel(
+                "earplay_channel",
+                "EarPlay Notification",
+                NotificationManager.IMPORTANCE_LOW);
+            channel.setDescription("EarPlay status notification");
+            channel.setShowBadge(false);
+            notificationManager.createNotificationChannel(channel);
+        }
+
         Intent intent = new Intent(this, MainActivity.class);
         intent.putExtra("i", "i");
         PendingIntent contextIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_IMMUTABLE);
 
-        Notification.Builder nb = new Notification.Builder(this);
+        Notification.Builder nb;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            nb = new Notification.Builder(this, "earplay_channel");
+        } else {
+            nb = new Notification.Builder(this);
+        }
+
         nb.setSmallIcon(R.mipmap.i)
                 .setOngoing(true)
                 .setLargeIcon(BitmapFactory.decodeResource(getResources(), R.mipmap.i))
@@ -295,9 +349,13 @@ public class MainActivity extends Activity implements SensorEventListener {
                 nb.setSmallIcon(Icon.createWithResource(this, R.drawable.a));
             }
         }
-        //设置消息属性
-        //必须设置的属性：小图标 标题 内容
-        notificationManager.notify(0, nb.build());
+
+        try {
+            notificationManager.notify(0, nb.build());
+            Log.d("MainActivity", "Notification posted successfully");
+        } catch (Exception e) {
+            Log.e("MainActivity", "Failed to post notification: " + e.getMessage());
+        }
     }
 
 
@@ -336,5 +394,14 @@ public class MainActivity extends Activity implements SensorEventListener {
         ll.setLayoutParams(lp);
     }
 
-
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == 1) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                // Permission granted, you can show notifications
+                setNotification();
+            }
+        }
+    }
 }
